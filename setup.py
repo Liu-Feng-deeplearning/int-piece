@@ -4,19 +4,10 @@ from setuptools import setup, find_packages
 from Cython.Build import cythonize
 
 setup(
-    name='bytepiece',
-    version='0.6.3',
-    python_requires='>=3',
-    description='Smarter Byte-based Tokenizer',
-    long_description=open('README_en.md').read(),
-    long_description_content_type='text/markdown',
-    license='Apache License 2.0',
-    url='https://github.com/bojone/bytepiece',
-    author='bojone',
-    author_email='bojone@spaces.ac.cn',
-    install_requires=['numpy', 'tqdm'],
+    name='intpiece',
+    install_requires=['numpy', 'tqdm', "ahocorasick"],
     packages=find_packages(),
-    ext_modules=cythonize('bytepiece/*.pyx'),
-    package_data={'bytepiece': ['*.pyx']},
+    ext_modules=cythonize('*.pyx'),
+    package_data={'intpiece': ['*.pyx']},
     include_package_data=True
 )

@@ -1,63 +1,63 @@
-[中文|[English](https://github.com/bojone/bytepiece/blob/main/README_en.md)]
+[[中文](https://github.com/bojone/bytepiece/blob/main/README.md)|English]
 
 # BytePiece
-BytePiece是一个Byte-based的Unigram分词器，纯Python实现，更加易读和易拓展。由于采用了新的训练算法，所以压缩率通常比现有Tokenizer更高，同时支持多进程加速训练。此外，它直接操作文本的UTF-8 Bytes，几乎不进行任何的预处理，所以更加纯粹和语言无关。
+BytePiece is a Byte-based Unigram tokenizer, implemented purely in Python, making it more readable and expandable. Due to the use of a new training algorithm, its compression rate is often higher than existing Tokenizers, and it also supports multiprocessing acceleration for training. Moreover, it directly operates on the UTF-8 Bytes of the text, with almost no preprocessing, making it more pure and language-independent.
 
-博客：
+Blog: 
 - https://kexue.fm/archives/9752
 - https://kexue.fm/archives/9768
 
-## 性质
+## Characteristics
 
-理想的Tokenizer及其训练算法，应该具备以下特点：
-- 无损重构
-- 高压缩率
-- 语言无关
-- 数据驱动
-- 训练友好
+An ideal Tokenizer and its training algorithm should have the following characteristics:
+- Lossless reconstruction
+- High compression rate
+- Language-independent
+- Data-driven
+- Training-friendly
 
-目前主流的[SentencePiece](https://github.com/google/sentencepiece)，事实上已经基本具备以上特性，但仍存在一些问题。比如：它支持BPE和Unigram两种算法，BPE压缩率往往更高一些，但训练极慢，而且非常耗内存；它还是对文本进行了少许语言相关的预处理的，所以“语言无关”这一点也不够纯粹。此外，它是用C++写的，对于多数用户来说就是黑箱，因此也不利于研究和修改。
+The mainstream [SentencePiece](https://github.com/google/sentencepiece) basically has the above characteristics, but there are still some problems. For example, it supports both BPE and Unigram algorithms. BPE often has a higher compression rate, but the training is extremely slow and consumes a lot of memory. Moreover, it does conduct some language-related preprocessing on the text, so it's not purely "language-independent". Besides, it's written in C++, which is a black box for most users, thus not conducive to research and modification.
 
-BytePiece构思了新的基于 **Byte-based N-gram Language Model（BNLM）** 的训练方式，能获得更高压缩率的词表，同时支持多进程训练，同等语料下相比SentencePiece的BPE训练有明显的加速。代码是纯Python，方便大家阅读和二次修改。此外，BytePiece还提供了比[Subword Regularization](https://arxiv.org/abs/1804.10959)更加高效的随机分词算法。
+BytePiece has conceived a new training method based on **Byte-based N-gram Language Model (BNLM)** , which can obtain a higher compression rate vocabulary table, support multiprocessing training, and significantly accelerate compared to SentencePiece's BPE training under the same corpus. The code is pure Python, easy for everyone to read and modify. In addition, BytePiece also provides a more efficient random segmentation algorithm than [Subword Regularization](https://arxiv.org/abs/1804.10959).
 
-## 原理
+## Principle
 
-BytePiece并非单纯基于Byte-based和多进程来重写已有的Unigram模型，而是为Unigram设计了新的训练方案，这是它压缩率更高的关键原因之一。
+BytePiece is not simply a rewrite of the existing Unigram model based on Byte-based and multiprocessor, but a new training method designed for Unigram, which is one of the key reasons for its higher compression rate.
 
-新的训练方案基于N-gram语言模型的新词发现算法，首次提出于笔者7年前的博客[《【中文分词系列】 5. 基于语言模型的无监督分词》](https://kexue.fm/archives/3956)，细节请移步阅读。
+The new training method is based on the new word discovery algorithm of the N-gram language model, first proposed in the author's blog 7 years ago [《【Chinese Word Segmentation Series】 5. Unsupervised Word Segmentation Based on Language Model》](https://kexue.fm/archives/3956). Please visit the blog for details.
 
-至于新的随机分词算法，则可以参考[《随机分词浅探：从Viterbi Decoding到Viterbi Sampling》](https://kexue.fm/archives/9768)和[《随机分词再探：从Viterbi Sampling到完美采样算法》](https://kexue.fm/archives/9811)。
+For the new random segmentation algorithm, you can refer to ["A Brief Exploration of Random Segmentation: From Viterbi Decoding to Viterbi Sampling"](https://kexue.fm/archives/9768) and ["Further Exploration of Random Segmentation: From Viterbi Sampling to Perfect Sampling Algorithm"](https://kexue.fm/archives/9811).
 
-## 安装
+## Installation
 
-BytePiece只能运行在Python3上，使用了[pyahocorasick](https://github.com/WojciechMula/pyahocorasick)来加速训练过程。由于BytePiece是Byte-based的，而PyPi上的pyahocorasick是Unicode-based的，所以不能直接用，需要参考如下方式安装Byte-based版的pyahocorasick：
+BytePiece can only run on Python3 and uses [pyahocorasick](https://github.com/WojciechMula/pyahocorasick) to accelerate the training process. Since BytePiece is Byte-based, and the pyahocorasick on PyPi is Unicode-based, it cannot be used directly. Please follow the instructions below to install the Byte-based version of pyahocorasick:
 ```bash
-# 如果已经安装，请先卸载
+# If already installed, please uninstall first
 pip uninstall pyahocorasick
 
-# 直接从git编译安装，注意要传入环境变量AHOCORASICK_BYTES
+# Compile and install directly from git, note to pass the environment variable AHOCORASICK_BYTES
 AHOCORASICK_BYTES=1 pip install git+https://github.com/WojciechMula/pyahocorasick.git
 ```
-然后安装Cython：
+Then install Cython:
 ```bash
 pip install Cython
 ```
-安装完之后，就可以用pip安装BytePiece了：
+After that, you can install BytePiece via pip:
 ```bash
 pip install bytepiece==0.6.3
 ```
 
-## 使用
+## Usage
 
-BytePiece的所有源码其实也就是单文件，包含`Trainer`和`Tokenizer`两个类，分别对应训练和分词。
+All source code of BytePiece is actually in a single file, including `Trainer` and `Tokenizer` two classes, corresponding to training and tokenization respectively.
 
-### 训练
+### Training
 
-训练Tokenizer只需要引入`Trainer`类：
+To train Tokenizer, you just need to import the `Trainer` class:
 ```python
 from bytepiece import Trainer
 ```
-然后准备训练语料。BytePiece支持不一次性将所有语料读进内存中，但由于BytePiece训练需要过两遍数据，所以不支持Generator输入，而是要写成Iterator的形式，例如：
+Then prepare the training corpus. BytePiece supports not reading all corpora into memory at once, but since BytePiece training needs to go through the data twice, it does not support Generator input, but needs to be written in the form of Iterator, for example:
 ```python
 import json
 
@@ -66,88 +66,72 @@ class corpus:
         f = 'data_sample.json'
         with open(f) as f:
             for l in f:
-                yield json.loads(l)['text']  # 每次返回一个Unicode
+                yield json.loads(l)['text']  # Return a Unicode each time
 ```
-然后就可以正式训练了：
+Then you can start the actual training:
 ```python
 trainer = Trainer(order=6, max_vocab_size=100000, min_count=32)
 trainer.train(corpus(), workers=64, batch_size=1000)
 trainer.save('bytepiece.model')
 ```
-这里的`order`就是n-gram语言模型的阶，推荐默认`order=6`就好；`max_vocab_size`是词表最大尺寸，注意由于去冗的原因，最后得到的词表不一定精确等于max_vocab_size，而是有可能会略少于；`min_count`则是token最低出现频数，数据量大时可以适当调大，一般不会明显影响训练结果；`workers`是并行训练的进程数，可以跑满机器的所有核心；`batch_size`是批大小，不会影响训练结果，一般情况下不用改，如果发现CPU利用率不满可以适当调大。
+Here, `order` is the order of the n-gram language model, it is recommended to keep the default `order=6`; `max_vocab_size` is the maximum size of the vocabulary, note that due to redundancy removal, the final vocabulary may not precisely equal max_vocab_size, it might be slightly less; `min_count` is the minimum occurrence frequency of tokens, when the data volume is large, it can be appropriately increased, it generally doesn't significantly affect the training results; `workers` is the number of parallel training processes, which can utilize all cores of the machine; `batch_size` is the batch size, it won't affect the training results, it usually doesn't need to be changed, if you find the CPU utilization is not full, you can appropriately increase it.
 
-此外，`0.4.1`版本开始新增`isolate_digits`参数，默认为`False`，当改为`True`时，保证将所有阿拉伯数字都切分为单个字符：
+In addition, starting from version `0.4.1`, a new parameter `isolate_digits` is added, which defaults to `False`. When set to `True`, it ensures that all Arabic numbers are split into individual characters:
 ```python
 trainer = Trainer(order=6, max_vocab_size=100000, min_count=32, isolate_digits=True)
 ```
-`0.6.0`版本开始新增`ensure_unicode`参数，能够保证所有的多字节token都可以还原为unicode，由于目前结果显示启用`ensure_unicode`后，训练得到的模型压缩率通常还高一些，所以默认为`True`，当改为`False`时（等价于0.6.0之前的版本），多字节token可能需要`decode(errors='ignore')`才能还原为unicode：
+Starting from version `0.6.0`, a new parameter `ensure_unicode` is added, which can ensure that all multi-byte tokens can be restored to unicode. Since the current results show that enabling `ensure_unicode` often results in a higher compression rate for the trained model, it is set to `True` by default. When set to `False` (equivalent to versions before 0.6.0), multi-byte tokens may need `decode(errors='ignore')` to be restored to unicode:
 ```python
 trainer = Trainer(order=6, max_vocab_size=100000, min_count=32, ensure_unicode=True)
 ```
 
-### 分词
+### Tokenization
 
-训练完成后，参考使用方式：
+After the training is completed, refer to the following usage:
 ```python
 from bytepiece import Tokenizer
 
 tokenizer = Tokenizer('bytepiece.model')
-text = '今天天气不错'
+text = 'Today's weather is great'
 
-tokens = tokenizer.tokenize(text)  # 返回bytes的list
-print(b' '.join(tokens).decode(errors='ignore'))  # 可视化分词结果
+tokens = tokenizer.tokenize(text)  # Returns a list of bytes
+print(b' '.join(tokens).decode(errors='ignore'))  # Visualize the tokenization result
 
-ids = tokenizer.encode(text)  # 返回tokens对应的ids
-print(tokenizer.decode(ids))  # 重新将ids解码为unicode文本
-ids = tokenizer.encode(text, iter=True)  # 返回ids的generator
+ids = tokenizer.encode(text)  # Returns the ids corresponding to tokens
+print(tokenizer.decode(ids))  # Decode the ids back to unicode text
+ids = tokenizer.encode(text, iter=True)  # Returns the generator of ids
 
-tokens = tokenizer.tokenize(text, alpha=0.2)  # 随机tokenize
-print(b' '.join(tokens).decode(errors='ignore'))  # 可视化分词结果
+tokens = tokenizer.tokenize(text, alpha=0.2)  # Random Tokenization
+print(b' '.join(tokens).decode(errors='ignore'))  # Visualize the tokenization result
 ```
 
-## 对比
+## Comparison
 
-小数据量对比：
+Comparison with small data volume:
 
-|  | 训练时间↓ | 最大内存占用↓ | 压缩率↑ | 分词速度↑ |
+|  | Training Time↓ | Maximum Memory Usage↓ | Compression Rate↑ | Tokenization Speed↑ |
 | :----: | :----: | :----: | :----: | :----: |
-| SP-BPE | 55.3分钟 | 5.2GB | 4.80 | 5.47 |
-| SP-Unigram | 1.6分钟 | 2.5GB | 4.73 | 7.84 |
-| BytePiece | 6.5分钟 | 4.3GB | 5.05 | 2.50 |
+| SP-BPE | 55.3 minutes | 5.2GB | 4.80 | 5.47 |
+| SP-Unigram | 1.6 minutes | 2.5GB | 4.73 | 7.84 |
+| BytePiece | 6.5 minutes | 4.3GB | 5.05 | 2.50 |
 
-大数据量对比：
+Comparison with large data volume:
 
-|  | 训练时间↓ | 最大内存占用↓ | 压缩率(同源)↑ | 压缩率(异源)↑ | 分词速度↑ |
+|  | Training Time↓ | Maximum Memory Usage↓ | Compression Rate (Homologous)↑ | Compression Rate (Heterologous)↑ | Tokenization Speed↑ |
 | :----: | :----: | :----: | :----: | :----: | :----: |
-| SP-BPE | 19.21小时 | 97GB | 4.52 | 4.46 | 1.27 |
-| SP-Unigram | 2.02小时 | 384GB | 4.51 | 4.48 | 5.55 |
-| BytePiece | 2.24小时 | 51GB | 5.39 | 4.51 | 1.92 |
+| SP-BPE | 19.21 hours | 97GB | 4.52 | 4.46 | 1.27 |
+| SP-Unigram | 2.02 hours | 384GB | 4.51 | 4.48 | 5.55 |
+| BytePiece | 2.24 hours | 51GB | 5.39 | 4.51 | 1.92 |
 
-压缩率的单位是“bytes/token”，即平均每个token对应的字节数；速度的单位是“M bytes/second”，即平均每秒可以切分的字节数（以百万为单位）。其他细节请参考[这里](https://kexue.fm/archives/9752#%E6%95%88%E6%9E%9C%E6%B5%8B%E8%AF%95)。
+The unit of compression rate is "bytes/token", i.e., the average number of bytes per token; the unit of speed is "M bytes/second", i.e., the average number of bytes that can be segmented per second (in millions). For other details, please refer to [here](https://kexue.fm/archives/9752#%E6%95%88%E6%9E%9C%E6%B5%8B%E8%AF%95).
 
-第一个表格的数据集平均长度较短，BytePiece同时慢于SP-BPE和SP-Unigram；在第二个表格中，语料的平均长度普遍更长，出现了BytePiece的速度优于SP-BPE的结果。这说明BPE的分词速度受长度影响比较明显，也说明经过Cython加速的BytePiece分词速度，速度上已经可以跟SentencePiece相比较。
+In the first table, the dataset has a shorter average length, BytePiece is slower than both SP-BPE and SP-Unigram; in the second table, the average length of the corpus is generally longer, resulting in BytePiece being faster than SP-BPE. This indicates that BPE's tokenization speed is significantly affected by length, and also indicates that BytePiece's tokenization speed, accelerated by Cython, can be compared with SentencePiece in terms of speed.
 
-## 下载
+## Download
 
-下载开源的BytePiece模型请移步到[models](https://github.com/bojone/bytepiece/tree/main/models)。
+To download the open-source BytePiece model, please go to [models](https://github.com/bojone/bytepiece/tree/main/models).
 
-## 转换
-
-`0.6.2`版开始引入`convert_to_sentencepiece`方法，支持将`ensure_unicode`版模型转为sentencepiece模型，并用sentencepiece加载：
-```python
-from bytepiece import Tokenizer
-tokenizer1 = Tokenizer('bytepiece.model')
-tokenizer1.convert_to_sentencepiece('bytepiece_sp.model')
-
-import sentencepiece as spm
-tokenizer2 = spm.SentencePieceProcessor('bytepiece_sp.model')
-
-tokenizer1.encode('今天天气不错')
-tokenizer2.encode('今天天气不错')
-```
-对于大部分输入，两个版本的模型都能够获得相同的分词结果和相同的编码ids。但无论如何，bytepiece和sentencepiece的处理逻辑不完全一样，bytepiece更加纯粹一些，而sentencepiece加了很多莫须有的预处理操作，这导致两个版本的模型无法完全对齐。目前已知的问题之一是，当输入包含多个连续换行符(\n)时，分词结果可能会有分歧。
-
-## 引用
+## Citation
 
 ```
 @misc{bytepiece2023,
@@ -158,6 +142,5 @@ tokenizer2.encode('今天天气不错')
 }
 ```
 
-## 交流
-QQ群：67729435，微信群请加机器人spaces_ac_cn
-
+## Communication
+QQ Group: 67729435, for WeChat group please add robot spaces_ac_cn
